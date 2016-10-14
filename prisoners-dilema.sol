@@ -1,7 +1,6 @@
 pragma solidity ^0.4.0;
 
 /// @title Prisoners dilemma in solidity
-
 contract PrisonersDilemma {
     uint public MutualBetrayalSentenceInMinutes;
     uint public SingleBetrayalSentenceInMinutes;
@@ -30,7 +29,13 @@ contract PrisonersDilemma {
     modifier onlyAfterChoicesMade() { if ( (PrisonerAddresses[0] == 0) || (PrisonerAddresses[1] == 0) ) throw; _; }
     modifier onlyPrisoners() { if(! ( (PrisonerAddresses[0] == msg.sender) || (PrisonerAddresses[1] == msg.sender) ) ) throw; _; }
 
-    ///Create a new PrisonersDilemma
+    /**
+    * @notice Create a Prisoner dilemma, where you want to get the smallest sentence possible
+    * @param _MutualBetrayalSentenceInMinutes Time a mutual betrayal will net you, e.g. 10
+    * @param _SingleBetrayalSentenceInMinutes Time which you'll get when only you betray the other prisoner, e.g. 3
+    * @param _SingleSilenceSentenceInMinutes Time which you'll get when you stay silent and the other prisoner betrays you, e.g. 8
+    * @param _MutualSilenceSentenceInMinutes Time both of you get if you stay silent, e.g. 5
+    */
     function PrisonersDilemma(uint _MutualBetrayalSentenceInMinutes, 
                               uint _SingleBetrayalSentenceInMinutes, 
                               uint _SingleSilenceSentenceInMinutes, 
@@ -42,6 +47,9 @@ contract PrisonersDilemma {
                                   MutualSilenceSentenceInMinutes = _MutualSilenceSentenceInMinutes * 1 minutes;
                               }
 
+                              /**
+                              * @notice Make your blinded choice, see helper contract to create hash
+                             */
                               function makeChoice(bytes32 _blindedChoice) payable {
                                   if(ended) {
                                       throw;
@@ -57,7 +65,9 @@ contract PrisonersDilemma {
                                       AllChoicesMade();
                               }
 
-                              ///Reveal both choices with your actual choice and a randomly chosen "salt"
+                              /**
+                              * @notice Reveal both choices with your actual choice and a randomly chosen "salt"
+                              */
                               function RevealChoices(Choice _choice, uint32 _random) 
                               onlyAfterChoicesMade 
                               onlyPrisoners 
@@ -69,9 +79,11 @@ contract PrisonersDilemma {
                                   }
                               }
 
-                              ///Cast sentence, if one of the parties has not yet revealed their choice,
-                              /// we consider this as "silence". 
-                              /// So only call this sentence after you gave the other party a chance to reveal their sentence
+                              /**
+                              * @notice Cast sentence, if one of the parties has not yet revealed their choice,
+                              * we consider this as "silence". 
+                              * So only call this sentence after you gave the other party a chance to reveal their sentence 
+                              */
                               function castSentence()
                               onlyAfterChoicesMade
                               onlyPrisoners
