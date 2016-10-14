@@ -17,3 +17,17 @@ contract HashTest {
 
 //Silence: 0x0000000000000000000000000000000000000000000000000000000000000001
 //Betray: 0x0000000000000000000000000000000000000000000000000000000000000000
+
+/*
+contract HashTestWithString {
+    enum Choice { Betray, Silence }
+    function testSha3() returns (bytes32) {
+
+        Choice choice = Choice.Betray;
+        string memory random = "Hello World";
+
+        return sha3(choice, random); 
+
+    }
+}
+*/
