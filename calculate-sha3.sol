@@ -1,14 +1,12 @@
 contract HashTest {
-        enum Choice { Betray, Silence }
-          function testSha3() returns (bytes32) {
-                    
+    enum Choice { Betray, Silence }
+    function testSha3() returns (bytes32) {
 
-                    Choice choice = Choice.Betray;
-                       uint32 random = 2;
+        Choice choice = Choice.Betray;
+        uint32 random = 2;
 
-
-                          return sha3(choice, random); 
-                           }
+        return sha3(choice, random); 
+    }
 }
 
 //betray, 2: 0xb4c9eaf404872994677d9def95dee3fe36bfbcd9be2312670ef7be131a502f32
