@@ -1,3 +1,5 @@
+///Hashing contract to calculate choice hash. 
+///Input this at e.g. https://ethereum.github.io/browser-solidity/
 contract HashTest {
     enum Choice { Betray, Silence }
     function testSha3() returns (bytes32) {
