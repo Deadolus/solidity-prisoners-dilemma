@@ -28,6 +28,7 @@ contract PrisonersDilemma {
 
     modifier onlyAfterChoicesMade() { if ( (PrisonerAddresses[0] == 0) || (PrisonerAddresses[1] == 0) ) throw; _; }
     modifier onlyPrisoners() { if(! ( (PrisonerAddresses[0] == msg.sender) || (PrisonerAddresses[1] == msg.sender) ) ) throw; _; }
+    modifier onlyBeforeEnded() { if( ended ) throw; _; }
 
     /**
     * @notice Create a Prisoner dilemma, where you want to get the smallest sentence possible
@@ -111,6 +112,7 @@ contract PrisonersDilemma {
 
 
                                   DilemmaEnded();
+                                  ended = true;
                                   Sentences(Sentence[prisoner1], Sentence[prisoner2]);
 
                               }
