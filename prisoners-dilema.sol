@@ -130,7 +130,21 @@ contract PrisonersDilemma {
                                   Sentences(Sentence[prisoner1], Sentence[prisoner2]);
 
                               }
-                              
+
+                              function restart()
+                              onlyAfterEnded
+                              {
+                                  status = Status.accepting;
+                                  for( uint i = 0; i < 2; i++)
+                                  {
+                                      BlindedPrisonersChoice[PrisonerAddresses[i]] = 0;
+                                      PrisonersChoice[PrisonerAddresses[i]] = Choice.None;
+                                      Sentence[PrisonerAddresses[i]] = 0;
+                                  }
+                                  delete PrisonerAddresses;
+                                  DilemmaStarted();
+                              }
+
 
                               //dummy function top prevent accidental ether sending
                               function() payable {
