@@ -128,6 +128,7 @@ contract PrisonersDilemma {
                                   DilemmaEnded();
                                   status = Status.ended;
                                   Sentences(Sentence[prisoner1], Sentence[prisoner2]);
+                                  restart();
 
                               }
 
