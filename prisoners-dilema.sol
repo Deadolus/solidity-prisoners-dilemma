@@ -8,17 +8,15 @@ contract PrisonersDilemma {
     uint public MutualSilenceSentenceInMinutes;
 
     enum Choice { Betray, Silence }
-    struct BlindedChoice {
-        address prisoner;
-        uint32  blindedChoice;
-    }
-    //   BlindedChoice[2] public BlindedPrisonersChoice;
+    enum Status { accepting, revealing, ended}
+    Status public status = Status.accepting;
     address[] PrisonerAddresses;
     mapping(address => bytes32) public BlindedPrisonersChoice;
     mapping(address => Choice) public PrisonersChoice;
     mapping(address => uint) public Sentence;
 
-    bool ended;
+    //bool ended;
+    //bool revealing;
 
     event ChoiceMade(address Prisoner);
     event AllChoicesMade();
@@ -26,9 +24,20 @@ contract PrisonersDilemma {
     event DilemmaEnded();
     event Sentences(uint prisoner1, uint prisoner2);
 
+    modifier onlyBeforeRevealing() { if( status >= Status.revealing ) throw; _; }
     modifier onlyAfterChoicesMade() { if ( (PrisonerAddresses[0] == 0) || (PrisonerAddresses[1] == 0) ) throw; _; }
+    modifier onlyAfterBothRevealed() { if( true) throw; _; }
+    modifier onlyBeforePrisonersSelected() {      
+        //if we already have two prisoners, check if sender is already a prisoner
+                                if(PrisonerAddresses.length == 2) {
+                                      if( (PrisonerAddresses[0] != msg.sender) && (PrisonerAddresses[1] != msg.sender) )
+                                      throw;
+                                }
+                                _;
+    }
     modifier onlyPrisoners() { if(! ( (PrisonerAddresses[0] == msg.sender) || (PrisonerAddresses[1] == msg.sender) ) ) throw; _; }
-    modifier onlyBeforeEnded() { if( ended ) throw; _; }
+    modifier onlyBeforeEnded() { if( status == Status.ended ) throw; _; }
+    modifier onlyAfterEnded() { if( status < Status.ended) throw; _; }
 
     /**
     * @notice Create a Prisoner dilemma, where you want to get the smallest sentence possible
@@ -51,19 +60,18 @@ contract PrisonersDilemma {
                               /**
                               * @notice Make your blinded choice, see helper contract to create hash
                              */
-                              function makeChoice(bytes32 _blindedChoice) payable {
-                                  if(ended) {
-                                      throw;
-                                  }
-
-                                  if(PrisonerAddresses.length > 2) {
-                                      throw;
-                                  }
+                              function makeChoice(bytes32 _blindedChoice) 
+                              onlyBeforePrisonersSelected
+                              onlyBeforeRevealing
+                              {
                                   BlindedPrisonersChoice[msg.sender] = _blindedChoice;
-                                  PrisonerAddresses.push(msg.sender);
+
+				   if( (PrisonerAddresses.length == 0 ) || ( (PrisonerAddresses.length == 1) && ( PrisonerAddresses[0] != msg.sender ) ) )
+                                       PrisonerAddresses.push(msg.sender);
                                   ChoiceMade(msg.sender);
-                                  if(PrisonerAddresses.length == 2)
-                                      AllChoicesMade();
+                               if( PrisonerAddresses.length == 2 ) 
+                               AllChoicesMade();     
+
                               }
 
                               /**
@@ -72,11 +80,13 @@ contract PrisonersDilemma {
                               function RevealChoices(Choice _choice, uint32 _random) 
                               onlyAfterChoicesMade 
                               onlyPrisoners 
+                              onlyBeforeEnded
                               {
                                   if( BlindedPrisonersChoice[msg.sender] == sha3(_choice, _random) ) {
                                       //Save the revealed choice
                                       PrisonersChoice[msg.sender] = _choice;
                                       Revealed(msg.sender, _choice);
+                                      status = Status.revealing;
                                   }
                               }
 
@@ -86,8 +96,9 @@ contract PrisonersDilemma {
                               * So only call this sentence after you gave the other party a chance to reveal their sentence 
                               */
                               function castSentence()
-                              onlyAfterChoicesMade
+                              onlyAfterBothRevealed
                               onlyPrisoners
+                              onlyBeforeEnded
                               {
                                   var prisoner1 = PrisonerAddresses[0];
                                   var prisoner2 = PrisonerAddresses[1];
@@ -112,10 +123,11 @@ contract PrisonersDilemma {
 
 
                                   DilemmaEnded();
-                                  ended = true;
+                                  status = Status.ended;
                                   Sentences(Sentence[prisoner1], Sentence[prisoner2]);
 
                               }
+                              
 
                               //dummy function top prevent accidental ether sending
                               function() payable {
